@@ -1,0 +1,143 @@
+Resumo do que tem que fazer -
+
+Esse projeto parece complicado à primeira vista, mas na real ele é bem lógico. Vou te explicar como se fosse um jogo 👇
+
+⸻
+
+🧠 Ideia geral (o “conceito” do projeto)
+
+Imagina que você tem um sistema que lê valores de pressão um por um, tipo:
+
+130 → 170 → 260 → 255 → ...
+
+Só que tem um problema crítico:
+
+👉 O sistema não pode guardar histórico completo
+Ele só pode:
+	•	ver o valor atual
+	•	guardar pouquíssimas informações essenciais (tipo média acumulada, menor valor, etc.)
+
+Isso é tipo um stream de dados — entrou, processa, joga fora.
+
+⸻
+
+🎯 O que você precisa fazer
+
+Você vai criar um programa em Python que:
+	1.	Pergunta:
+Quantas leituras vão acontecer no turno?
+	2.	Para cada leitura:
+	•	recebe o valor
+	•	processa na hora
+	•	atualiza métricas
+	•	descarta o valor
+
+⸻
+
+⚙️ Passo a passo do processamento
+
+1. Ajuste térmico (SEMPRE primeiro)
+
+Cada valor muda:
+	•	Se > 150 → aumenta 8%
+	•	Se ≤ 150 → diminui 4%
+
+Exemplo:
+	•	200 → 200 * 1.08 = 216
+	•	100 → 100 * 0.96 = 96
+
+⸻
+
+2. Classificação da zona
+
+Depois do ajuste:
+
+Faixa	Zona
+120 a 180	🟢 Verde
+<120 ou até 250	🟡 Amarela
+>250	🔴 Vermelha
+
+
+⸻
+
+3. Regra CRÍTICA (a mais importante)
+
+Se acontecer isso:
+
+Vermelha → Vermelha (duas seguidas)
+
+💥 PARA TUDO (break no loop)
+
+⸻
+
+📊 O que você precisa ir guardando DURANTE o processo
+
+Mesmo sem histórico completo, você precisa guardar:
+	•	soma das pressões ajustadas → pra média
+	•	quantidade de leituras feitas
+	•	menor valor já visto
+	•	contador de zona verde
+	•	controle da última zona (pra detectar 2 vermelhas seguidas)
+
+👉 Isso é o “truque” do projeto:
+Você não guarda tudo, só o necessário.
+
+⸻
+
+📈 Resultados finais
+
+Quando acabar (normal ou travado), mostrar:
+	1.	Média das pressões ajustadas
+	2.	Menor pressão registrada
+	3.	% de leituras na zona verde
+	4.	Se travou:
+	•	% das leituras que chegaram a ser feitas
+
+⸻
+
+🧩 Resumindo a lógica mental
+
+Você vai fazer algo tipo:
+
+para cada leitura:
+    ajustar valor
+    classificar zona
+    atualizar métricas
+    
+    se duas vermelhas seguidas:
+        parar tudo
+
+
+⸻
+
+💡 O “tema escondido” do trabalho
+
+Esse projeto tá ensinando você a:
+	•	trabalhar com dados em fluxo (streaming)
+	•	usar memória mínima
+	•	fazer lógica em tempo real
+	•	usar variáveis acumuladoras
+
+👉 Isso é MUITO usado na vida real (sistemas industriais, sensores, IoT)
+
+⸻
+
+🔥 Dica pra você mandar bem
+
+Se quiser destacar seu projeto:
+	•	mostrar mensagens tipo:
+	•	“⚠️ Zona Amarela detectada”
+	•	“🚨 Zona Vermelha!”
+	•	usar cores (print estilizado)
+	•	mostrar cada leitura processada
+	•	adicionar logs tipo:
+	•	“Leitura 3/10”
+
+⸻
+
+🧠 Se quiser, eu posso:
+	•	montar o código completo pra você
+	•	ou fazer junto passo a passo (melhor pra aprender)
+	•	ou te ajudar com o relatório também
+
+Só me fala 👍
