@@ -1,0 +1,241 @@
+"""
+╔══════════════════════════════════════════════════════════════╗
+║          SEUC-4 — Sistema de Emergência e Umbral             ║
+║               de Controle — Versão 4                         ║
+║                  Refinaria Delta-9                            ║
+╚══════════════════════════════════════════════════════════════╝
+
+  Desenvolvido para rodar diretamente nos buffers de sensor.
+  Sem dependência de memória de armazenamento histórica.
+  Cada leitura é processada, avaliada e descartada.
+"""
+
+import os
+import time
+
+# ──────────────────────────────────────────────
+#  CONSTANTES DO SISTEMA
+# ──────────────────────────────────────────────
+LIMITE_AJUSTE_TERMICO = 150.0   # UPC
+FATOR_EXPANSAO        = 1.08    # +8% acima de 150
+FATOR_CONTRACAO       = 0.96    # -4% abaixo/igual a 150
+
+ZONA_VERDE_MIN        = 120.0
+ZONA_VERDE_MAX        = 180.0
+ZONA_CRITICA_MIN      = 250.0
+
+
+# ──────────────────────────────────────────────
+#  UTILITÁRIOS DE INTERFACE
+# ──────────────────────────────────────────────
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+
+def barra_pressao(valor_adj: float, largura: int = 30) -> str:
+    """Retorna uma barra visual ASCII proporcional à pressão."""
+    maximo = 400.0
+    proporcao = min(valor_adj / maximo, 1.0)
+    preenchido = int(proporcao * largura)
+    vazio = largura - preenchido
+
+    if valor_adj <= ZONA_VERDE_MAX and valor_adj >= ZONA_VERDE_MIN:
+        simbolo = "█"
+    elif valor_adj < ZONA_CRITICA_MIN:
+        simbolo = "▒"
+    else:
+        simbolo = "▓"
+
+    return f"[{simbolo * preenchido}{'░' * vazio}] {valor_adj:.1f} UPC"
+
+
+def cabecalho():
+    print("=" * 58)
+    print("  ██████  SEUC-4 · REFINARIA DELTA-9  ██████")
+    print("  Sistema de Emergência e Umbral de Controle")
+    print("=" * 58)
+    print()
+
+
+def linha_separadora():
+    print("─" * 58)
+
+
+def classificar_zona(valor_adj: float) -> tuple[str, str]:
+    """
+    Retorna (zona, descricao_visual).
+    zona: 'VERDE' | 'AMARELA' | 'VERMELHA'
+    """
+    if ZONA_VERDE_MIN <= valor_adj <= ZONA_VERDE_MAX:
+        return "VERDE",    "  ✔  ZONA VERDE   — Estável"
+    elif valor_adj < ZONA_CRITICA_MIN:
+        return "AMARELA",  "  ⚠  ZONA AMARELA — Oscilação"
+    else:
+        return "VERMELHA", "  ✖  ZONA VERMELHA — CRÍTICA"
+
+
+# ──────────────────────────────────────────────
+#  VALIDAÇÕES DE ENTRADA
+# ──────────────────────────────────────────────
+def solicitar_total_leituras() -> int:
+    while True:
+        try:
+            n = int(input("  Informe o número total de leituras do turno: "))
+            if n <= 0:
+                print("  ⚠  Informe um número inteiro positivo.")
+                continue
+            return n
+        except ValueError:
+            print("  ⚠  Entrada inválida. Digite um número inteiro.")
+
+
+def solicitar_leitura(numero: int, total: int) -> float:
+    while True:
+        try:
+            val = float(input(f"\n  Leitura [{numero}/{total}] → Pressão bruta (UPC): "))
+            if val < 0:
+                print("  ⚠  Pressão não pode ser negativa.")
+                continue
+            return val
+        except ValueError:
+            print("  ⚠  Entrada inválida. Digite um número.")
+
+
+# ──────────────────────────────────────────────
+#  NÚCLEO DO SEUC-4
+# ──────────────────────────────────────────────
+def executar_seuc4():
+    limpar_tela()
+    cabecalho()
+
+    nome_operador = input("  Nome do operador responsável: ").strip() or "Operador Anônimo"
+    print(f"\n  Olá, {nome_operador}. O SEUC-4 está ativo e monitorando.")
+    linha_separadora()
+
+    total_leituras = solicitar_total_leituras()
+
+    # ── Variáveis de estado (sem listas; apenas acumuladores) ──
+    soma_ajustada   = 0.0
+    soma_quadrados  = 0.0          # Para desvio padrão online
+    minima          = float('inf')
+    maxima          = float('-inf')
+    contagem_verde  = 0
+    leituras_feitas = 0
+    zona_anterior   = None         # Memória mínima: apenas a zona da leitura anterior
+    travamento      = False
+
+    print(f"\n  Total de leituras programadas: {total_leituras}")
+    print("  Iniciando monitoramento do Duto Principal de Escoamento (DPE)...")
+    linha_separadora()
+
+    # ──────────────────────────────
+    #  LOOP PRINCIPAL DE LEITURAS
+    # ──────────────────────────────
+    for i in range(1, total_leituras + 1):
+
+        pressao_bruta = solicitar_leitura(i, total_leituras)
+
+        # 1. Ajuste Térmico
+        if pressao_bruta > LIMITE_AJUSTE_TERMICO:
+            pressao_ajustada = pressao_bruta * FATOR_EXPANSAO
+            tipo_ajuste = f"+8% expansão térmica  ({pressao_bruta:.2f} → {pressao_ajustada:.2f})"
+        else:
+            pressao_ajustada = pressao_bruta * FATOR_CONTRACAO
+            tipo_ajuste = f"-4% contração         ({pressao_bruta:.2f} → {pressao_ajustada:.2f})"
+
+        # 2. Classificação de Zona
+        zona, descricao_zona = classificar_zona(pressao_ajustada)
+
+        # 3. Atualização de Métricas (acumuladores — sem listas)
+        leituras_feitas += 1
+        soma_ajustada   += pressao_ajustada
+        soma_quadrados  += pressao_ajustada ** 2
+
+        if pressao_ajustada < minima:
+            minima = pressao_ajustada
+        if pressao_ajustada > maxima:
+            maxima = pressao_ajustada
+        if zona == "VERDE":
+            contagem_verde += 1
+
+        media_atual = soma_ajustada / leituras_feitas
+
+        # 4. Exibição da leitura
+        print(f"\n  {'─'*50}")
+        print(f"  Ajuste térmico   : {tipo_ajuste}")
+        print(f"  Classificação    : {descricao_zona}")
+        print(f"  Barra de pressão : {barra_pressao(pressao_ajustada)}")
+        print(f"  Média acumulada  : {media_atual:.2f} UPC")
+
+        # 5. Protocolo de Travamento
+        if zona == "VERMELHA" and zona_anterior == "VERMELHA":
+            travamento = True
+            print()
+            print("  ╔══════════════════════════════════════════╗")
+            print("  ║   !! PROTOCOLO DE TRAVAMENTO ATIVADO !!  ║")
+            print("  ║  DOIS PICOS CRÍTICOS CONSECUTIVOS        ║")
+            print("  ║  ESCOAMENTO INTERROMPIDO IMEDIATAMENTE   ║")
+            print("  ╚══════════════════════════════════════════╝")
+            break
+
+        # 6. Avisos intermediários extras
+        if zona == "VERMELHA":
+            print("  ⚠  ATENÇÃO: Próximo pico crítico acionará travamento!")
+        elif zona == "AMARELA":
+            print("  ℹ  Pressão fora da faixa estável. Monitorar.")
+
+        zona_anterior = zona
+
+    # ──────────────────────────────
+    #  RELATÓRIO FINAL
+    # ──────────────────────────────
+    print()
+    linha_separadora()
+    print("  ┌──────────────────────────────────────────────┐")
+    print("  │           RELATÓRIO FINAL DE TURNO           │")
+    print("  └──────────────────────────────────────────────┘")
+
+    media_final      = soma_ajustada / leituras_feitas
+    pct_verde        = (contagem_verde / leituras_feitas) * 100
+    pct_realizado    = (leituras_feitas / total_leituras) * 100
+
+    # Desvio padrão (sem lista; via fórmula de variância online)
+    variancia        = (soma_quadrados / leituras_feitas) - (media_final ** 2)
+    desvio_padrao    = variancia ** 0.5 if variancia > 0 else 0.0
+
+    print(f"\n  Operador responsável : {nome_operador}")
+    print(f"  Leituras realizadas  : {leituras_feitas} de {total_leituras} ({pct_realizado:.1f}%)")
+    linha_separadora()
+    print(f"  1. Média ajustada        : {media_final:.2f} UPC")
+    print(f"  2. Menor pressão         : {minima:.2f} UPC")
+    print(f"  3. Maior pressão         : {maxima:.2f} UPC")
+    print(f"  4. Leituras Zona Verde   : {pct_verde:.1f}%")
+    print(f"  5. Índice de instab. (σ) : {desvio_padrao:.2f} UPC")
+
+    if desvio_padrao < 10:
+        print("     ↳ Operação estável (baixa dispersão)")
+    elif desvio_padrao < 30:
+        print("     ↳ Oscilação moderada — atenção recomendada")
+    else:
+        print("     ↳ ALTA DISPERSÃO — investigar sistema")
+
+    linha_separadora()
+    if travamento:
+        print(f"  ENCERRAMENTO : TRAVAMENTO DE SEGURANÇA")
+        print(f"  % de leituras realizadas: {pct_realizado:.1f}%")
+        print("  ► O duto foi interrompido antes da conclusão do turno.")
+    else:
+        print("  ENCERRAMENTO : Turno concluído normalmente.")
+        print("  ► Todas as leituras foram processadas com sucesso.")
+
+    linha_separadora()
+    print(f"\n  ◈ SEUC-4 · Refinaria Delta-9 · Operação encerrada")
+    print(f"  ◈ Responsável: {nome_operador}")
+    print()
+
+
+# ──────────────────────────────────────────────
+#  PONTO DE ENTRADA
+# ──────────────────────────────────────────────
+if __name__ == "__main__":
+    executar_seuc4()
