@@ -1,2 +1,2 @@
 # Projeto-Lucia
-Projeto De Refinaria da Lucia - até dia 10/05
+Projeto SEUC-4 - até dia 10/05
