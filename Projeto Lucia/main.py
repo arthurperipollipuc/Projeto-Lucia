@@ -35,8 +35,8 @@ def exibir_relatorio(total_leituras, soma_ajustadas, menor_pressao,
     print("\n" + "=" * 50)
     print("        RELATÓRIO FINAL - SEUC-4")
     print("=" * 50)
- 
-    # calcula média e percentual verde (evita divisão por zero)
+
+                      
     media = soma_ajustadas / leituras_realizadas if leituras_realizadas > 0 else 0
     percentual_verde = (contagem_verde / leituras_realizadas * 100) if leituras_realizadas > 0 else 0
  
