@@ -1,10 +1,6 @@
-Resumo do que tem que fazer -
 
-Esse projeto parece complicado à primeira vista, mas na real ele é bem lógico. Vou te explicar como se fosse um jogo 👇
 
-⸻
-
-🧠 Ideia geral (o “conceito” do projeto)
+🧠 Ideia geral 
 
 Imagina que você tem um sistema que lê valores de pressão um por um, tipo:
 
@@ -15,22 +11,8 @@ Só que tem um problema crítico:
 👉 O sistema não pode guardar histórico completo
 Ele só pode:
 	•	ver o valor atual
-	•	guardar pouquíssimas informações essenciais (tipo média acumulada, menor valor, etc.)
+	•	guardar poucas informações essenciais (tipo média acumulada, menor valor, etc.)
 
-Isso é tipo um stream de dados — entrou, processa, joga fora.
-
-⸻
-
-🎯 O que você precisa fazer
-
-Você vai criar um programa em Python que:
-	1.	Pergunta:
-Quantas leituras vão acontecer no turno?
-	2.	Para cada leitura:
-	•	recebe o valor
-	•	processa na hora
-	•	atualiza métricas
-	•	descarta o valor
 
 ⸻
 
@@ -65,12 +47,11 @@ Faixa	Zona
 Se acontecer isso:
 
 Vermelha → Vermelha (duas seguidas)
-
-💥 PARA TUDO (break no loop)
+o codigo e encerrado.
 
 ⸻
 
-📊 O que você precisa ir guardando DURANTE o processo
+O que você precisa ir guardando DURANTE o processo
 
 Mesmo sem histórico completo, você precisa guardar:
 	•	soma das pressões ajustadas → pra média
@@ -79,12 +60,9 @@ Mesmo sem histórico completo, você precisa guardar:
 	•	contador de zona verde
 	•	controle da última zona (pra detectar 2 vermelhas seguidas)
 
-👉 Isso é o “truque” do projeto:
-Você não guarda tudo, só o necessário.
-
 ⸻
 
-📈 Resultados finais
+ Resultados finais
 
 Quando acabar (normal ou travado), mostrar:
 	1.	Média das pressões ajustadas
@@ -95,7 +73,7 @@ Quando acabar (normal ou travado), mostrar:
 
 ⸻
 
-🧩 Resumindo a lógica mental
+resumindo a lógica 
 
 Você vai fazer algo tipo:
 
@@ -110,33 +88,13 @@ para cada leitura:
 
 ⸻
 
-💡 O “tema escondido” do trabalho
-
 Esse projeto tá ensinando você a:
-	•	trabalhar com dados em fluxo (streaming)
+	•	trabalhar com dados em fluxo 
 	•	usar memória mínima
 	•	fazer lógica em tempo real
 	•	usar variáveis acumuladoras
 
-👉 Isso é MUITO usado na vida real (sistemas industriais, sensores, IoT)
 
-⸻
-
-🔥 Dica pra você mandar bem
-
-Se quiser destacar seu projeto:
-	•	mostrar mensagens tipo:
-	•	“⚠️ Zona Amarela detectada”
-	•	“🚨 Zona Vermelha!”
-	•	usar cores (print estilizado)
-	•	mostrar cada leitura processada
-	•	adicionar logs tipo:
-	•	“Leitura 3/10”
-
-⸻
-
-🧠 Se quiser, eu posso:
-	•	montar o código completo pra você
 	•	ou fazer junto passo a passo (melhor pra aprender)
 	•	ou te ajudar com o relatório também
 
