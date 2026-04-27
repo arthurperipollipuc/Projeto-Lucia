@@ -1,66 +1,56 @@
-print("=== SEUC-4 - Refinaria Delta-9 ===")
-
-total = int(input("Quantas leituras serão feitas? "))
-
-# variáveis
-soma = 0
-menor = None
-cont_verde = 0
-leituras_feitas = 0
-zona_anterior = ""
-
-travou = False
-
-for i in range(total):
-    valor = float(input(f"Leitura {i+1}: "))
-
-    # ajuste térmico
-    if valor > 150:
-        valor = valor * 1.08
+# ============================================================
+#   SEUC-4 - Sistema de Escoamento de Unidades de Carga
+#   Refinaria Delta-9
+# ============================================================
+ 
+def ajuste_termico(pressao):
+    """Aplica o ajuste térmico à leitura de pressão."""
+    if pressao > 150:
+        return pressao * 1.08   
     else:
-        valor = valor * 0.96
-
-    # classificação
-    if valor >= 120 and valor <= 180:
-        zona = "verde"
-    elif valor < 250:
-        zona = "amarela"
+        return pressao * 0.96   
+ 
+ 
+def classificar_zona(pressao_ajustada):
+    """Retorna a zona de estabilidade da leitura ajustada."""
+    if pressao_ajustada > 250:
+        return "VERMELHA"       
+    elif 120 <= pressao_ajustada <= 180:
+        return "VERDE"          
     else:
-        zona = "vermelha"
-
-    print("Valor ajustado:", round(valor, 2))
-    print("Zona:", zona)
-
-    # atualizar dados
-    soma += valor
-    leituras_feitas += 1
-
-    if menor is None or valor < menor:
-        menor = valor
-
-    if zona == "verde":
-        cont_verde += 1
-
-    # verificar travamento
-    if zona == "vermelha" and zona_anterior == "vermelha":
-        print("TRAVAMENTO! Duas zonas vermelhas seguidas.")
-        travou = True
-        break
-
-    zona_anterior = zona
-
-# resultados
-media = soma / leituras_feitas
-porc_verde = (cont_verde / leituras_feitas) * 100
-
-print("\n=== RESULTADO ===")
-print("Média:", round(media, 2))
-print("Menor valor:", round(menor, 2))
-print("Porcentagem zona verde:", round(porc_verde, 2), "%")
-
-if travou:
-    porc_realizado = (leituras_feitas / total) * 100
-    print("Sistema travou.")
-    print("Leituras feitas:", round(porc_realizado, 2), "%")
-else:
-    print("Sistema finalizado normalmente.")
+        return "AMARELA"        
+ 
+ 
+def exibir_leitura(numero, pressao_original, pressao_ajustada, zona):
+    """Exibe os dados de uma leitura formatada."""
+    print(f"\n  Leitura #{numero}")
+    print(f"    Pressão original : {pressao_original:.2f} UPC")
+    print(f"    Pressão ajustada : {pressao_ajustada:.2f} UPC")
+    print(f"    Zona             : {zona}")
+ 
+ 
+def exibir_relatorio(total_leituras, soma_ajustadas, menor_pressao,
+                     contagem_verde, travamento, leituras_realizadas):
+    """Exibe o relatório final de métricas."""
+    print("\n" + "=" * 50)
+    print("        RELATÓRIO FINAL - SEUC-4")
+    print("=" * 50)
+ 
+    # calcula média e percentual verde (evita divisão por zero)
+    media = soma_ajustadas / leituras_realizadas if leituras_realizadas > 0 else 0
+    percentual_verde = (contagem_verde / leituras_realizadas * 100) if leituras_realizadas > 0 else 0
+ 
+    print(f"  Leituras realizadas    : {leituras_realizadas} de {total_leituras}")
+    print(f"  Média das pressões     : {media:.2f} UPC")
+    print(f"  Menor pressão ajustada : {menor_pressao:.2f} UPC")
+    print(f"  Leituras na Zona Verde : {percentual_verde:.1f}%")
+ 
+    if travamento:
+        percentual_realizado = (leituras_realizadas / total_leituras) * 100
+        print(f"\n  * SISTEMA TRAVADO *")
+        print(f"  Percentual do turno executado: {percentual_realizado:.1f}%")
+        print(f"  Causa: dois picos consecutivos na Zona Vermelha.")
+    else:
+        print(f"\n  Turno concluído sem travamentos.")
+ 
+    print("=" * 50)
