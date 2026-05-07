@@ -1,15 +1,13 @@
-# ==================================================
-#   SEUC-4 - Refinaria Delta-9
-#   Sistema de Escoamento de Unidades de Carga
-# ==================================================
-import funcoes
-import time
+import os
 
 COR_VERDE = '\033[92m'
 COR_AMARELA = '\033[93m'
 COR_VERMELHA = '\033[91m'
 COR_RESET = '\033[0m'
 NEGRITO = '\033[1m'
+
+def limpar_tela():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def ajuste_termico(pressao):
    if pressao > 150:
@@ -29,7 +27,7 @@ def classificar_zona(pressao_ajustada):
 
 
 def gerar_relatorio(total, leituras_realizadas, soma_ajustadas, menor_pressao, contagem_verde, travamento):
-   funcoes.limpar_tela()
+   limpar_tela()
 
    
    if leituras_realizadas > 0:
@@ -59,7 +57,7 @@ def gerar_relatorio(total, leituras_realizadas, soma_ajustadas, menor_pressao, c
 
 
 def main():
-   funcoes.limpar_tela()
+   limpar_tela()
    print(f"{NEGRITO}{COR_AMARELA}" + "=" * 50)
    print("  SEUC-4 - Refinaria Delta-9")
    print("  Sistema de Escoamento de Unidades de Carga")
@@ -70,13 +68,14 @@ def main():
    
    while not turno_valido:
        total = (input("\nInforme o número total de leituras do turno: "))
-       if not funcoes.somente_int(str(total)):
-           print(f"{COR_VERMELHA}Entrada inválida. Por favor, insira um número inteiro.{COR_RESET}")
-       elif int(total) <= 0:
-           print(f"{COR_VERMELHA}Número de leituras deve ser maior que zero. Tente novamente.{COR_RESET}")
+       if total.isdigit():
+           if int(total) <= 0:
+               print(f"{COR_VERMELHA}Número de leituras deve ser maior que zero. Tente novamente.{COR_RESET}")
+           else:
+               turno_valido = True
+               total = int(total)
        else:
-           turno_valido = True
-           total = int(total)
+           print(f"{COR_VERMELHA}Entrada inválida. Por favor, insira um número inteiro.{COR_RESET}")
 
 
    soma_ajustadas = 0.0
@@ -85,15 +84,11 @@ def main():
    zona_anterior_vermelha = False
    travamento = False
    leituras_realizadas = 0
-
-   funcoes.limpar_tela()
-   print(f"\n{COR_VERDE}Iniciando sistema de monitoramento...{COR_RESET}")
-   time.sleep(1.5)
    
    
 
    for i in range(1, total + 1):
-       funcoes.limpar_tela()
+       limpar_tela()
        
        print(f"{NEGRITO}\n--- Leitura {i} de {total} ---{COR_RESET}")
        
@@ -102,7 +97,7 @@ def main():
    
        while not turno_valido:
             pressao = input(f"  Digite a pressão {NEGRITO}(UPC){COR_RESET}: ")
-            if not funcoes.somente_float(str(pressao)):
+            if not pressao.isdigit():
                 print(f"{COR_VERMELHA}Entrada inválida. Por favor, insira um número.{COR_RESET}")
             else:
                 turno_valido = True
@@ -133,7 +128,7 @@ def main():
        print(f"  Zona             :{NEGRITO}{cor_zona}{zona}{COR_RESET}\n")
 
        if zona == "VERMELHA" and zona_anterior_vermelha:
-           funcoes.limpar_tela()
+           limpar_tela()
            print(f"{NEGRITO}{COR_VERMELHA}")
            print("=" * 55)
            print(" [!!!] ALERTA CRÍTICO: FADIGA DE MATERIAL[!!!]")
