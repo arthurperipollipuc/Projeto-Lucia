@@ -97,7 +97,7 @@ def main():
    
        while not turno_valido:
             pressao = input(f"  Digite a pressão {NEGRITO}(UPC){COR_RESET}: ")
-            if not pressao.isdigit():
+            if not pressao.replace('.', '', 1).isdigit():
                 print(f"{COR_VERMELHA}Entrada inválida. Por favor, insira um número.{COR_RESET}")
             else:
                 turno_valido = True
