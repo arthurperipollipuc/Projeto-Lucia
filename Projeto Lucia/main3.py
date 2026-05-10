@@ -79,7 +79,7 @@ def main():
 
 
    soma_ajustadas = 0.0
-   menor_pressao = float('inf')
+   menor_pressao = None
    contagem_verde = 0
    zona_anterior_vermelha = False
    travamento = False
@@ -112,7 +112,7 @@ def main():
        soma_ajustadas += ajustada
        leituras_realizadas += 1
 
-       if ajustada < menor_pressao:
+       if menor_pressao is None or ajustada < menor_pressao:
            menor_pressao = ajustada
 
        if zona == "VERDE":
